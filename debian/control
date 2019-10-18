@@ -1,0 +1,20 @@
+Source: dropbear-rescue
+Section: net
+Priority: optional
+Maintainer: Anton Avramov <lukav@lukav.com>
+Build-Depends: debhelper (>= 9)
+
+Package: dropbear-rescue
+Architecture: all
+Breaks: dropbear (<< 2015.68-1)
+Replaces: dropbear (<< 2015.68-1)
+Depends: dropbear-bin (>= 2016.74-5+deb9u1), initramfs-tools (>= 0.94), busybox | busybox-static, udev
+Description: lightweight SSH2 server and client - initramfs rescue integration
+ dropbear is a SSH 2 server and client designed to be small enough to
+ be used in small memory environments, while still being functional and
+ secure enough for general use.
+ .
+ It implements most required features of the SSH 2 protocol, and other
+ features such as X11 and authentication agent forwarding.
+ .
+ This package provides initramfs integration that runs in rescue mode

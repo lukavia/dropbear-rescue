@@ -1,0 +1,80 @@
+#!/bin/sh
+
+PREREQ=""
+
+prereqs() {
+    echo "$PREREQ"
+}
+
+case "$1" in
+    prereqs)
+        prereqs
+        exit 0
+    ;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions
+
+dropbear_warn() {
+    echo "dropbear: WARNING:" "$@" >&2
+}
+
+copy_exec /usr/sbin/dropbear /sbin
+LIBC_DIR=$(ldd /usr/sbin/dropbear | sed -nr 's#.* => (/lib.*)/libc\.so\.[0-9.-]+ \(0x[[:xdigit:]]+\)$#\1#p')
+find -L "$LIBC_DIR" -maxdepth 1 -name 'libnss_files.*' -type f | while read so; do
+    copy_exec "$so"
+done
+
+for x in passwd group; do 
+    if [ ! -e "$DESTDIR/etc/nsswitch.conf" ] || ! grep $x "$DESTDIR/etc/nsswitch.conf" > /dev/null; then
+        echo "$x: files" >> "$DESTDIR/etc/nsswitch.conf"
+    fi
+done
+if [ ! -e "$DESTDIR/etc/passwd" ] || ! grep root "$DESTDIR/etc/passwd" > /dev/null; then
+    home=$(mktemp -d "$DESTDIR/root-XXXXXX")
+    chmod 0700 "$home"
+    echo "root:*:0:0::${home#$DESTDIR}:/bin/sh" >"$DESTDIR/etc/passwd"
+else
+    home=$DESTDIR$(grep '^root:' $DESTDIR/etc/passwd | cut -d: -f6)
+fi
+if [ ! -e "$DESTDIR/etc/group" ] || ! grep root "$DESTDIR/etc/group" > /dev/null; then
+    echo "root:!:0:" >"$DESTDIR/etc/group"
+fi
+
+# Copy config and host keys
+mkdir -p "$DESTDIR/etc/dropbear-rescue"
+if [ -e /etc/dropbear-rescue/config ]; then
+    cp -p "/etc/dropbear-rescue/config" "$DESTDIR/etc/dropbear-rescue/"
+fi
+for keytype in dss rsa ecdsa; do
+    #hostkey="/etc/dropbear-initramfs/dropbear_${keytype}_host_key"
+    #[ -f "$hostkey" ] && cp -p "$hostkey" "$DESTDIR/etc/dropbear/"
+    hostkey="/etc/ssh/ssh_host_${keytype}_key"
+    destkey="$DESTDIR/etc/dropbear-rescue/dropbear_${keytype}_host_key"
+    [ -f "$hostkey" ] && [ ! -e "$destkey" ] && \
+	    /usr/lib/dropbear/dropbearconvert openssh dropbear "${hostkey}" "$destkey"
+done
+
+if [ -z "$(find "$DESTDIR/etc/dropbear-rescue" -maxdepth 1 -name 'dropbear_*_host_key')" ]; then
+    dropbear_warn "Missing host keys, remote rescue via SSH won't work!"
+fi
+
+# Copy authorized_keys
+if [ ! -e ]; then
+    mkdir -m0700 "$home/.ssh"
+fi
+if [ -e /root/.ssh/authorized_keys ]; then
+    cat /root/.ssh/authorized_keys
+else
+    for keytype in dsa rsa ecdsa; do
+        pubkey="/etc/dropbear-rescue/id_${keytype}.pub"
+        [ -e "$pubkey" ] && cat "$pubkey"
+    done
+fi >>"$home/.ssh/authorized_keys"
+
+echo "echo --------------------------------" >> "$home/.profile"
+echo 'echo To continue booting execute: kill -1$(ps -o pid,args | grep "sh -i" | grep -v grep | cut -d" " -f-3)' >> "$home/.profile"
+
+if ! grep -qE '^([^#]+ )?(ssh-(dss|rsa)|ecdsa-sha2-nistp(256|384|521)) ' "$home/.ssh/authorized_keys"; then
+    dropbear_warn "Invalid authorized_keys file, remote rescue via SSH won't work!"
+fi
