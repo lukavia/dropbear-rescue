@@ -1,0 +1,8 @@
+dropbear-rescue for Debian
+-------------------------
+
+This package contains initramfs scripts to add and run dropbear when the system boots in rescue mode
+
+
+ -- Anton Avramov <lukav@lukav.com>  Mon, 21 Oct 2019 17:24:46 -0400
+
