@@ -1,4 +1,6 @@
 # Add any directories, files, or patterns you don't want to be tracked by version control
 debian/files
-debian/dropbear-rescue*
+debian/dropbear-rescue/
+debian/dropbear-rescue.debhelper.log
+debian/dropbear-rescue.substvars
 debian/.debhelper/
