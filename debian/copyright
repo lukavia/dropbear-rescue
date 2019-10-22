@@ -4,7 +4,8 @@ Source: <https://github.com/lukavia/dropbear-rescue>
 
 Files: *
 Copyright: 2019 Anton Avramov <lukav@lukav.com>
-License: GPL-2.0+
+           © 2002-2015 Matt Johnston <matt@ucc.asn.au>
+           © 2004 Mihnea StoenescuLicense: GPL-2.0+
 
 Files: debian/*
 Copyright: 2019 Anton Avramov <lukav@lukav.com>
