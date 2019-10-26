@@ -3,14 +3,12 @@ Section: net
 Priority: optional
 Maintainer: Anton Avramov <lukav@lukav.com>
 Build-Depends: debhelper (>= 9)
-Standards-Version: 3.9.8
+Standards-Version: 4.4.1
 Homepage: https://github.com/lukavia/dropbear-rescue
 
 Package: dropbear-rescue
 Architecture: all
-Breaks: dropbear (<< 2015.68-1)
-Replaces: dropbear (<< 2015.68-1)
-Depends: ${misc:Depends}, dropbear-bin (>= 2016.74-5+deb9u1), initramfs-tools (>= 0.94), busybox | busybox-static, udev
+Depends: ${misc:Depends}, dropbear-bin, initramfs-tools (>= 0.94), busybox | busybox-static, udev
 Description: lightweight SSH2 server and client - initramfs rescue integration
  dropbear is a SSH 2 server and client designed to be small enough to
  be used in small memory environments, while still being functional and
