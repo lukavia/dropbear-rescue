@@ -1,3 +1,9 @@
+dropbear-rescue (0.2) unstable; urgency=medium
+
+  * Updated hostkey generations since the can not convert anymore
+
+ -- Anton Avramov <avramov@lukanet.com>  Thu, 14 Apr 2022 12:33:43 -0400
+
 dropbear-rescue (0.1) unstable; urgency=medium
 
   * Initial Release.

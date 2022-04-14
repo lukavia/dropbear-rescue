@@ -14,24 +14,25 @@ case "$1" in
 esac
 
 . /scripts/functions
+EXE="$(readlink -f /sbin/dropbear)" && [ -f "$EXE" ] || exit 1
 
 # delete authorized_keys(5) file to forbid new SSH sessions
 rm -f ~root/.ssh/authorized_keys
 
 if PID="$(cat /run/dropbear-rescue.pid)" 2>/dev/null &&
-        [ "$(readlink -f "/proc/$PID/exe")" = /sbin/dropbear ]; then
+        [ "$(readlink -f "/proc/$PID/exe")" = "$EXE" ]; then
     log_begin_msg "Stopping dropbear-rescue"
 
     # Kill all process groups the leader of which is a child of the
     # dropbear process, i.e., SSH sessions and their sub processes
     # (busybox's kill doesn't accept multiple -PGID so we use a while loop)
-    ps -o ppid= -o pid= -o pgid= | \
-        sed -nr "s/^\s*$PID\s+([0-9]+)\s+\1\s*$/\1/p" | \
+    sed -nr "s/^([0-9]+) \\(.*\\) \\S $PID \\1 .*/\\1/p" \
+        /proc/[0-9]*/stat 2>/dev/null | \
         while read pgid; do kill -TERM -"$pgid"; done
 
     # Kill remaining children (there shouldn't be any)
-    ps -o ppid= -o pid= | \
-        sed -nr "s/^\s*$PID\s+([0-9]+)\s*$/\1/p" | \
+    sed -nr "s/^([0-9]+) \\(.*\\) \\S $PID [0-9]+ .*/\\1/p" \
+        /proc/[0-9]*/stat 2>/dev/null | \
         while read pid; do kill -TERM "$pid"; done
 
     # NOTE: It's racy to kill dropbear after its children, as a new SSH

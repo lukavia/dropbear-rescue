@@ -47,12 +47,8 @@ if [ -e /etc/dropbear-rescue/config ]; then
     cp -p "/etc/dropbear-rescue/config" "$DESTDIR/etc/dropbear-rescue/"
 fi
 for keytype in dss rsa ecdsa; do
-    #hostkey="/etc/dropbear-initramfs/dropbear_${keytype}_host_key"
-    #[ -f "$hostkey" ] && cp -p "$hostkey" "$DESTDIR/etc/dropbear/"
-    hostkey="/etc/ssh/ssh_host_${keytype}_key"
-    destkey="$DESTDIR/etc/dropbear-rescue/dropbear_${keytype}_host_key"
-    [ -f "$hostkey" ] && [ ! -e "$destkey" ] && \
-	    /usr/lib/dropbear/dropbearconvert openssh dropbear "${hostkey}" "$destkey"
+    hostkey="/etc/dropbear-rescue/dropbear_${keytype}_host_key"
+    [ -f "$hostkey" ] && cp -p "$hostkey" "$DESTDIR/etc/dropbear-rescue/"
 done
 
 if [ -z "$(find "$DESTDIR/etc/dropbear-rescue" -maxdepth 1 -name 'dropbear_*_host_key')" ]; then
@@ -60,11 +56,11 @@ if [ -z "$(find "$DESTDIR/etc/dropbear-rescue" -maxdepth 1 -name 'dropbear_*_hos
 fi
 
 # Copy authorized_keys
-if [ ! -e ]; then
+if [ ! -e "$home/.ssh" ]; then
     mkdir -m0700 "$home/.ssh"
 fi
-if [ -e /root/.ssh/authorized_keys ]; then
-    cat /root/.ssh/authorized_keys
+if [ -e /etc/dropbear-rescue/authorized_keys ]; then
+    cat /etc/dropbear-rescue/authorized_keys
 else
     for keytype in dsa rsa ecdsa; do
         pubkey="/etc/dropbear-rescue/id_${keytype}.pub"

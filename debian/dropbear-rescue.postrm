@@ -1,0 +1,15 @@
+#! /bin/sh
+set -e
+
+if [ "$1" = purge ]; then
+    rm -f /etc/dropbear-rescue/dropbear_dss_host_key \
+          /etc/dropbear-rescue/dropbear_rsa_host_key \
+          /etc/dropbear-rescue/dropbear_ecdsa_host_key \
+          /etc/dropbear-rescue/authorized_keys \
+          /etc/dropbear-rescue/id_dsa.pub \
+          /etc/dropbear-rescue/id_rsa.pub \
+          /etc/dropbear-rescue/id_ecdsa.pub
+fi
+
+#DEBHELPER#
+exit 0
